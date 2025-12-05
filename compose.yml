@@ -4,9 +4,9 @@ services:
     container_name: windows
     hostname: win11
     environment:
-      VERSION: "2025"
+      VERSION: "11"
       USERNAME: "admin"
-      PASSWORD: "admin"
+      PASSWORD: "StrongPassword123!"
     devices:
       - /dev/kvm
       - /dev/net/tun
@@ -24,16 +24,17 @@ services:
       resources:
         limits:
           cpus: "4"
-          memory: 100G
+          memory: 8G
         reservations:
-          cpus: "4"
-          memory: 100G
+          cpus: "2"
+          memory: 4G
 
 volumes:
   windows_data:
     driver: local
     driver_opts:
-      type: none
-      o: bind
-      device: ./windows
-      size: 6T   # 1 terabyte quota
+      type: xfs
+      o: pquota
+      device: /var/lib/docker/volumes/windows_data
+      size: 2T   # 2 terabyte quota
+
