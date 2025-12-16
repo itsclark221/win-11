@@ -2,13 +2,14 @@ services:
   windows:
     image: dockurr/windows
     container_name: windows
+    hostname: win2025 # Changed hostname for clarity
     environment:
-      VERSION: "2025"
-      DISK_SIZE: "2TB"
+      VERSION: "2025" # Changed from "11" to "2025"
+      USERNAME: "admin"
+      PASSWORD: "StrongPassword123!"
     devices:
       - /dev/kvm
       - /dev/net/tun
-      - /dev/dri
     cap_add:
       - NET_ADMIN
     ports:
@@ -16,9 +17,23 @@ services:
       - 3389:3389/tcp
       - 3389:3389/udp
     volumes:
-      - ./windows:/storage
-      - /run/user/1000/pulse:/run/user/1000/pulse
-    environment:
-      PULSE_SERVER: unix:/run/user/1000/pulse/native
+      - windows_data:/storage
     restart: always
     stop_grace_period: 2m
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: "89GB"
+        reservations:
+          cpus: "2"
+          memory: "456GB"
+
+volumes:
+  windows_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./windows
+      size: "1T"   # 1 terabyte quota
