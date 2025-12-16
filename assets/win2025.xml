@@ -1,63 +1,152 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<unattend xmlns="urn:schemas-microsoft-com:unattend" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
-  <settings pass="windowsPE">
-    <component name="Microsoft-Windows-International-Core-WinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35">
-      <SetupUILanguage><UILanguage>en-US</UILanguage></SetupUILanguage>
-      <InputLocale>0409:00000409</InputLocale>
-      <SystemLocale>en-US</SystemLocale>
-      <UILanguage>en-US</UILanguage>
-      <UILanguageFallback>en-US</UILanguageFallback>
-      <UserLocale>en-US</UserLocale>
-    </component>
-    <component name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35">
-      <DiskConfiguration>
-        <Disk wcm:action="add">
-          <DiskID>0</DiskID>
-          <WillWipeDisk>true</WillWipeDisk>
-          <CreatePartitions>
-            <CreatePartition wcm:action="add"><Order>1</Order><Type>EFI</Type><Size>128</Size></CreatePartition>
-            <CreatePartition wcm:action="add"><Order>2</Order><Type>Primary</Type><Extend>true</Extend></CreatePartition>
-          </CreatePartitions>
-          <ModifyPartitions>
-            <ModifyPartition wcm:action="add"><Order>1</Order><PartitionID>1</PartitionID><Label>System</Label><Format>FAT32</Format></ModifyPartition>
-            <ModifyPartition wcm:action="add"><Order>2</Order><PartitionID>2</PartitionID><Label>Windows</Label><Letter>C</Letter><Format>NTFS</Format></ModifyPartition>
-          </ModifyPartitions>
-        </Disk>
-      </DiskConfiguration>
-      <ImageInstall>
-        <OSImage>
-          <InstallFrom><MetaData wcm:action="add"><Key>/IMAGE/NAME</Key><Value>Windows Server 2025 SERVERSTANDARD</Value></MetaData></InstallFrom>
-          <InstallTo><DiskID>0</DiskID><PartitionID>2</PartitionID></InstallTo>
-          <WillShowUI>Never</WillShowUI>
-          <InstallToAvailablePartition>false</InstallToAvailablePartition>
-        </OSImage>
-      </ImageInstall>
-      <DynamicUpdate><Enable>false</Enable><WillShowUI>Never</WillShowUI></DynamicUpdate>
-      <UpgradeData><Upgrade>false</Upgrade><WillShowUI>Never</WillShowUI></UpgradeData>
-      <UserData><AcceptEula>true</AcceptEula><FullName>Docker</FullName><Organization>Windows for Docker</Organization></UserData>
-    </component>
-  </settings>
+<domain type="kvm">
+  <name>Windows Server 2025 Eval</name>
+  <uuid>e5f6a7b8-9012-34cd-ef56-7890abcdef12</uuid>
+  <description>Windows Server 2025 Eval - Overpowered VM</description>
+  <metadata>
+    <vmtemplate xmlns="unraid" name="Windows Server 2025 Eval" icon="windows.png" os="windowstpm"/>
+  </metadata>
 
-  <settings pass="specialize">
-    <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35">
-      <ComputerName>*</ComputerName>
-      <OEMInformation><Manufacturer>Dockur</Manufacturer><Model>Windows for Docker</Model><SupportProvider>Dockur</SupportProvider></OEMInformation>
-    </component>
-    <component name="Microsoft-Windows-ErrorReportingCore" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35"><DisableWER>1</DisableWER></component>
-  </settings>
+  <!-- Memory: 64 GB -->
+  <memory unit="KiB">67108864</memory>
+  <currentMemory unit="KiB">67108864</currentMemory>
 
-  <settings pass="oobeSystem">
-    <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35">
-      <UserAccounts><AdministratorPassword><Value>password</Value><PlainText>true</PlainText></AdministratorPassword></UserAccounts>
-      <AutoLogon><Username>Administrator</Username><Enabled>true</Enabled><LogonCount>1</LogonCount><Password><Value>password</Value><PlainText>true</PlainText></Password></AutoLogon>
-      <Display><ColorDepth>32</ColorDepth><HorizontalResolution>1920</HorizontalResolution><VerticalResolution>1080</VerticalResolution></Display>
-      <OOBE><HideEULAPage>true</HideEULAPage><HideLocalAccountScreen>true</HideLocalAccountScreen><HideOEMRegistrationScreen>true</HideOEMRegistrationScreen><HideOnlineAccountScreens>true</HideOnlineAccountScreens><HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE><SkipUserOOBE>true</SkipUserOOBE><SkipMachineOOBE>true</SkipMachineOOBE></OOBE>
-      <FirstLogonCommands>
-        <SynchronousCommand wcm:action="add"><Order>1</Order><CommandLine>reg.exe add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Power" /v ThrottlePolicy /t REG_DWORD /d 0 /f</CommandLine><Description>Disable CPU throttling</Description></SynchronousCommand>
-        <SynchronousCommand wcm:action="add"><Order>2</Order><CommandLine>reg.exe add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Processor" /v EnableIdleThread /t REG_DWORD /d 0 /f</CommandLine><Description>Force full CPU utilization</Description></SynchronousCommand>
-        <SynchronousCommand wcm:action="add"><Order>3</Order><CommandLine>wmic computersystem where name="%computername%" set AutomaticManagedPagefile=False</CommandLine><Description>Disable automatic pagefile</Description></SynchronousCommand>
-        <SynchronousCommand wcm:action="add"><Order>4</Order><CommandLine>wmic pagefileset where name="C:\\pagefile.sys" delete</CommandLine><Description>Remove pagefile</Description></SynchronousCommand>
-      </FirstLogonCommands>
-    </component>
-  </settings>
-</unattend>
+  <!-- vCPUs: 32 threads (16 cores × 2 threads) -->
+  <vcpu placement="static">32</vcpu>
+  <iothreads>4</iothreads>
+
+  <!-- Modern CPU model -->
+  <cpu mode="custom" match="exact" check="full">
+    <model fallback="allow">Zen-5</model>
+    <topology sockets="1" dies="1" cores="16" threads="2"/>
+    <feature policy="require" name="svm"/>
+    <feature policy="require" name="hypervisor"/>
+  </cpu>
+
+  <os>
+    <type arch="x86_64" machine="pc-q35-7.2">hvm</type>
+    <loader readonly="yes" type="pflash">/usr/share/qemu/ovmf-x64/OVMF_CODE-pure-efi-tpm.fd</loader>
+    <nvram>/etc/libvirt/qemu/nvram/win2025eval_VARS-pure-efi-tpm.fd</nvram>
+  </os>
+
+  <features>
+    <acpi/>
+    <apic/>
+    <hyperv mode="custom">
+      <relaxed state="on"/>
+      <vapic state="on"/>
+      <spinlocks state="on" retries="8191"/>
+      <vpindex state="on"/>
+      <synic state="on"/>
+      <stimer state="on"/>
+      <vendor_id state="on" value="none"/>
+    </hyperv>
+  </features>
+
+  <clock offset="localtime">
+    <timer name="hypervclock" present="yes"/>
+    <timer name="hpet" present="no"/>
+  </clock>
+
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>restart</on_crash>
+
+  <devices>
+    <emulator>/usr/local/sbin/qemu</emulator>
+
+    <!-- GPU passthrough (graphics + audio) -->
+    <hostdev mode="subsystem" type="pci" managed="yes">
+      <driver name="vfio"/>
+      <source>
+        <address domain="0x0000" bus="0x03" slot="0x00" function="0x0"/>
+      </source>
+      <address type="pci" domain="0x0000" bus="0x0a" slot="0x00" function="0x0"/>
+    </hostdev>
+    <hostdev mode="subsystem" type="pci" managed="yes">
+      <driver name="vfio"/>
+      <source>
+        <address domain="0x0000" bus="0x03" slot="0x00" function="0x1"/>
+      </source>
+      <address type="pci" domain="0x0000" bus="0x0a" slot="0x00" function="0x1"/>
+    </hostdev>
+
+    <!-- Looking Glass ivshmem -->
+    <shmem name="looking-glass-eval">
+      <model type="ivshmem"/>
+      <size unit="M">128</size>
+    </shmem>
+    <channel type="unix">
+      <target type="virtio" name="org.qemu.guest_agent.0"/>
+      <address type="virtio-serial" controller="0" bus="0" port="1"/>
+    </channel>
+
+    <!-- ✅ Alternate virtual audio device (AC97) -->
+    <sound model="ac97"/>
+    <audio id="1" type="pulseaudio"/>
+
+    <!-- Fast SSD disk -->
+    <disk type="file" device="disk">
+      <driver name="qemu" type="qcow2" cache="none" io="native"/>
+      <source file="/var/lib/libvirt/images/win2025eval-ssd.qcow2"/>
+      <target dev="vda" bus="virtio"/>
+      <boot order="1"/>
+    </disk>
+
+    <!-- Windows Server 2025 Eval installer ISO -->
+    <disk type="file" device="cdrom">
+      <driver name="qemu" type="raw"/>
+      <source file="/var/lib/libvirt/boot/Win2025Eval.iso"/>
+      <target dev="sda" bus="sata"/>
+      <boot order="2"/>
+      <readonly/>
+    </disk>
+
+    <!-- VirtIO drivers ISO -->
+    <disk type="file" device="cdrom">
+      <driver name="qemu" type="raw"/>
+      <source file="/var/lib/libvirt/boot/virtio-win.iso"/>
+      <target dev="sdb" bus="sata"/>
+      <readonly/>
+    </disk>
+
+    <!-- Controllers -->
+    <controller type="pci" index="0" model="pcie-root"/>
+    <controller type="pci" index="1" model="pcie-root-port"/>
+    <controller type="pci" index="2" model="pcie-root-port"/>
+    <controller type="pci" index="3" model="pcie-root-port"/>
+    <controller type="pci" index="4" model="pcie-root-port"/>
+    <controller type="pci" index="5" model="pcie-root-port"/>
+    <controller type="pci" index="6" model="pcie-root-port"/>
+    <controller type="pci" index="7" model="pcie-root-port"/>
+    <controller type="pci" index="8" model="pcie-root-port"/>
+    <controller type="pci" index="9" model="pcie-root-port"/>
+    <controller type="pci" index="10" model="pcie-root-port"/>
+    <controller type="pci" index="11" model="pcie-to-pci-bridge"/>
+    <controller type="pci" index="12" model="pcie-root-port"/>
+    <controller type="virtio-serial" index="0"/>
+    <controller type="sata" index="0"/>
+    <controller type="usb" index="0" model="qemu-xhci" ports="15"/>
+
+    <!-- Network -->
+    <interface type="bridge">
+      <mac address="52:54:00:19:a0:d3"/>
+      <source bridge="br0.1"/>
+      <model type="virtio"/>
+    </interface>
+
+    <!-- Inputs -->
+    <input type="tablet" bus="usb"/>
+    <input type="mouse" bus="ps2"/>
+    <input type="keyboard" bus="ps2"/>
+
+    <!-- TPM -->
+    <tpm model="tpm-tis">
+      <backend type="emulator" version="2.0" persistent_state="yes"/>
+    </tpm>
+
+    <!-- Misc -->
+    <serial type="pty"/>
+    <console type="pty"/>
+    <memballoon model="none"/>
+  </devices>
+</domain>
