@@ -4,6 +4,8 @@ services:
     container_name: windows
     environment:
       VERSION: "11"
+      DISK_SIZE: "1TB"   # main system disk, becomes Drive C:
+      MEMORY: "1024G"    # optional: allocate 1TB RAM
     devices:
       - /dev/kvm
       - /dev/net/tun
@@ -14,6 +16,6 @@ services:
       - 3389:3389/tcp
       - 3389:3389/udp
     volumes:
-      - ./windows:/storage
+      - ./windows:/storage   # disk.qcow2 lives here
     restart: always
     stop_grace_period: 2m
