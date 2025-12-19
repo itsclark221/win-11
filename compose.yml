@@ -3,9 +3,16 @@ services:
     image: dockurr/windows
     container_name: windows
     environment:
-      VERSION: "11"
-      DISK_SIZE: "1TB"   # main system disk, becomes Drive C:
+     VERSION: "11"
+   DISK_SIZE: "8TB"   # main system disk, becomes Drive C:
       MEMORY: "1024G"    # optional: allocate 1TB RAM
+   ARGUMENTS: "-device usb-host,vendorid=0x1234,productid=0x1234"
+      MANUAL: "Y"     # optional: allocate 1TB RAM
+     
+                       
+   
+    
+    
     devices:
       - /dev/kvm
       - /dev/net/tun
