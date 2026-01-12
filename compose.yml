@@ -4,6 +4,9 @@ services:
     container_name: windows
     environment:
       VERSION: "11"
+      MANUAL: "Y"
+      VGA: "virtio-gpu"
+    
     devices:
       - /dev/kvm
       - /dev/net/tun
